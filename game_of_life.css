@@ -1,0 +1,92 @@
+.button {
+	border: 1px black solid;
+	border-radius: 10px;
+	font-size: 22px;
+	outline: 0;
+	background-color: #7FDBFF;
+	width: 65px;
+	height: 65px;
+	margin: 5px;
+}
+
+.button:hover {
+	opacity: 0.8;
+	background-color: #3498db;
+}
+
+.button:active {
+	background-color: #2980b9;
+}
+
+.buttons {
+	width: 225px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 10px;
+}
+
+footer {
+	width: 100%;
+	margin-top: 20px;
+	background-color: white;
+	text-align: center;
+}
+
+.generation {
+	color: gray;
+	text-align: right; 
+	display: inline;
+	font-weight: bold;
+}
+
+.info {
+	font-weight: bold;
+}
+
+.logo_link {
+	font-size: 20px;
+}
+
+table {
+	margin-right: auto;
+	margin-left: auto;
+}
+
+td {
+	height: 25px;
+	width: 25px;
+	border: 1px black solid;
+}
+
+.td0 {
+	background-color: white;
+}
+
+.td1 {
+	background-color: purple;
+}
+
+.title {
+	display: inline;
+	text-align: left;
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+
+@media (max-width: 719px) {
+	.generation {
+		font-size: 24px;
+	}
+	.title {
+		font-size: 24px;
+	}
+}
+
+@media (min-width: 720px) {
+	.generation {
+		font-size: 36px;
+	}
+	.title {
+		font-size: 36px;
+	}
+}

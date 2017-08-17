@@ -1,0 +1,234 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>Game of Life</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	
+	<!-- jQuery -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+
+	<!-- Bootstrap-->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+	<!-- React-->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react-dom.min.js"></script>
+
+	<!-- CSS Stylesheet-->
+	<link rel="stylesheet" href="game_of_life.css" type="text/css">
+
+	<!--Babel compiler-->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.24/browser.js"></script>
+
+	<!--Font Awesome-->
+	<script src="https://use.fontawesome.com/9ab0b6d75e.js"></script>
+
+</head>
+<body>
+	<div id="app"></div>
+
+	<script type="text/babel">
+	//stores whether game is running
+	var running = false;
+	//returns a random grid
+	const randomGrid = (width,height) => {
+		let grid = new Object();
+		for (let i=0; i < height; i++) {
+			let row = [];
+			for (let j=0; j < width; j++) {
+				let random = Math.random();
+				random = (random < 0.5 ? 0 : 1);
+				row.push(random);
+			}
+			grid[i] = row;
+		};
+		return grid;
+	};
+	//returns a grid with all empty cells
+	const clearGrid = (width,height) => {
+		let grid = new Object();
+		for (let j=0; j < height; j++) {
+			let row = [];
+			for (let i = 0; i < width; i++) {
+				row.push(0);
+			}
+			grid[j] = row;
+		}
+		return grid;
+	}
+	var generation = 0;
+	var timer;
+	var width_window = window.outerWidth;
+	var height_window = window.outerHeight;
+	//width and height of grid are dependent on width and height of window
+	var width_grid = (width_window < 300 ? 10 : Math.floor((width_window - 20)/25));
+	var height_grid = Math.floor((height_window * 0.6)/25);
+	class Game extends React.Component {
+		constructor(props) {
+			super(props);
+			this.state = {
+				grid: randomGrid(width_grid,height_grid),
+				generation: generation
+			};
+			this.Change = this.Change.bind(this);
+			this.Clear = this.Clear.bind(this);  
+			this.Start = this.Start.bind(this);
+		}
+		//changes values of cell when clicked on it
+		Change(row,column) {
+			const grid_current = this.state.grid;
+			const elem = grid_current[row][column];
+			if (elem === 0) {
+				grid_current[row][column] = 1;
+				this.setState({
+					grid: grid_current,
+				})
+			}
+			else {
+				grid_current[row][column] = 0;
+				this.setState({
+					grid: grid_current,
+				})
+			}
+		}
+		//Clear button
+		Clear() {
+			generation = 0;
+			this.Stop();
+			this.setState({
+				grid: clearGrid(width_grid,height_grid),
+				generation: 0
+			});
+		}
+		//Start button
+		Start() {
+			if (running === false) {
+				running = true;
+				timer = setInterval(() => {
+					var grid_updated = this.UpdateGrid(this.state.grid);
+					this.setState({
+						grid: grid_updated,
+					}) 
+				},1000);
+				timer;
+			}
+		}
+		//Stop button
+		Stop() {
+			running = false;
+			clearInterval(timer);
+		}
+		//returns grid updated based on grid put in as argument
+		UpdateGrid(grid) {
+			this.setState({
+				generation: generation += 1
+			});
+			let grid_updated = new Object();
+			Object.keys(grid).map((row) => {
+				var row = parseInt(row);
+				let rows = Object.keys(grid).length;
+				let columns = grid[row].length;
+				let row_updated = [];
+				for (var column=0; column < columns; column++) {
+					let elem = grid[row][column];
+					let elem_score = 0;
+					/* gives you the value of an element (1 = alive, 0 = dead) at the position x,y. Where x or y go beyond the grid (equals -1 or is bigger than the number of rows or columns -1), it instead gives you the value of the element at the opposite end of the grid */ 
+					const elemValue = (x,y) => {
+						let x_compute = 0;
+						let y_compute = 0;
+						if (x === -1) {
+							x_compute = columns -1;
+						}
+						else if (x === columns) {
+							x_compute = 0;
+						}
+						else {
+							x_compute = x;
+						}
+						if (y === -1) {
+							y_compute = rows -1;
+						}
+						else if (y === rows) {
+							y_compute = 0;
+						}
+						else {
+							y_compute = y;
+						}
+						return grid[y_compute][x_compute];
+					};
+					/* elem_score is the sum of the values of the elements surrounding the current element. */
+					elem_score = elemValue(column-1,row-1) + elemValue(column-1,row) + 
+					elemValue(column-1,row+1) + elemValue(column,row+1) + 	 
+					elemValue(column,row-1) + elemValue(column+1,row+1) + 
+					elemValue(column+1,row) + elemValue(column+1,row-1);
+					if (elem === 1) {
+						if ((elem_score > 1) && (elem_score < 4)) {
+							row_updated.push(1);
+						}
+						else {
+							row_updated.push(0);
+						}
+					}
+					else {
+						if (elem_score === 3) {
+							row_updated.push(1);
+						}
+						else {
+							row_updated.push(0)
+						}
+					}
+				};
+				grid_updated[row] = row_updated;
+			});
+			return grid_updated;
+		}
+		//Game starts automatically when you go on webpage
+		componentDidMount() {
+			this.Start();
+		}
+		render() {
+			return (
+				<div className="container">
+				<div className="row">
+					<div className="title col-xs-10"> Conways Game of Life </div>
+					<div className="generation col-xs-2">{this.state.generation}</div>
+				</div>
+				<div className="table_container">
+				{Object.keys(this.state.grid).map((row) => 
+					<table>
+					<tr>	
+					{this.state.grid[row].map((elem,column) => 
+						<td onClick={() => this.Change(row,column)} className={"td" + elem}></td>
+						)}
+					</tr>
+					</table>
+					)}
+				</div>
+				<div className="buttons row">
+					<button className="button" onClick={() => this.Start()}>Start</button>
+					<button className="button" onClick={() => this.Stop()}>Stop</button>
+					<button className="button" onClick={() => this.Clear()}>Clear</button>
+				</div>
+				<footer>
+					<div className="col-md-4 info">Conways Game of Life on <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life" className="logo_link" target="_blank"><i className="fa fa-wikipedia-w" aria-hidden="true"></i></a>
+					</div> 
+					<div className="col-md-4">Created by <a href="https://sebgrebe.github.io/">sebgrebe</a> with <a href="https://facebook.github.io/react/" target="_blank"><img src="reactlogo.png" height="20px" /></a>
+					</div>
+					<div className="col-md-4">
+						Source code on <a href="https://github.com/sebgrebe?tab=repositories" className="logo_link" target="_blank"><i className="fa fa-github" aria-hidden="true"></i></a>
+					</div>
+				</footer>
+				</div>
+				)
+		}
+	}
+
+//renders RecipeBox
+ReactDOM.render(<Game />, document.getElementById('app'));
+
+</script>
+
+</body>
+</html>
