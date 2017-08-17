@@ -60,7 +60,7 @@
 	}
 	var generation = 0;
 	var timer;
-	var width_window = window.outerWidth;
+	var width_window = window.innerWidth;
 	var height_window = window.outerHeight;
 	//width and height of grid are dependent on width and height of window
 	var width_grid = (width_window < 300 ? 10 : Math.floor((width_window - 20)/25));
@@ -196,15 +196,15 @@
 					<div className="generation col-xs-2">{this.state.generation}</div>
 				</div>
 				<div className="table_container">
+				<table>
 				{Object.keys(this.state.grid).map((row) => 
-					<table>
 					<tr>	
 					{this.state.grid[row].map((elem,column) => 
 						<td onClick={() => this.Change(row,column)} className={"td" + elem}></td>
 						)}
 					</tr>
-					</table>
 					)}
+				</table>
 				</div>
 				<div className="buttons row">
 					<button className="button" onClick={() => this.Start()}>Start</button>
